@@ -1,0 +1,4 @@
+node_modules/
+test/frontend/tasks/environments/
+test/frontend/tasks/config.js
+test/src/

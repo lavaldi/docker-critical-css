@@ -1,0 +1,7 @@
+version: '2'
+
+services:
+  critical:
+    image: $IMAGE_DEV
+    build:
+      context: docker/dev

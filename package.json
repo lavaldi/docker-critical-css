@@ -1,0 +1,15 @@
+{
+  "name": "docker-critical-css",
+  "version": "1.0.0",
+  "description": "Critical CSS with Docker, puppeteer and critical",
+  "main": "critical.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Claudia Valdivieso",
+  "license": "MIT",
+  "dependencies": {
+    "critical": "1.0.0",
+    "puppeteer": "0.13.0"
+  }
+}

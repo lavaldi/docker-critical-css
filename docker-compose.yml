@@ -1,0 +1,19 @@
+version: '2'
+
+services:
+  critical:
+    image: $IMAGE_DEV
+    volumes:
+      - ./test:/usr/local/app
+      - ./node_modules/:/usr/local/node_modules/
+    working_dir: /usr/local/app/frontend/tasks
+    command: 
+      - "node"
+      - "critical"
+      - $ENV
+  install:
+    image: node:9.2.0-slim
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: yarn install
