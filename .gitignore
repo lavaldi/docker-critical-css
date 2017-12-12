@@ -1,4 +1,4 @@
 node_modules/
+test/frontend/source/critical.jade
 test/frontend/tasks/environments/
 test/frontend/tasks/config.js
-test/src/

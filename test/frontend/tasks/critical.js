@@ -2,14 +2,15 @@ const puppeteer = require("puppeteer");
 const critical  = require("critical");
 const fs        = require("fs");
 
-const config    = require("./config").getConfig();
 const pathFiles = require("/usr/local/app/frontend/config/docker-path.js");
 
-async function scrape (uri) {
+const url = "https://aptitus.com/";
+
+async function scrape (url) {
   const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
   const page = await browser.newPage();
-  console.info(`Init! ${config.host}/${uri}`);
-  await page.goto(`${config.host}/${uri}`, {timeout: 120000});
+  console.info(`Init! ${url}`);
+  await page.goto(`${url}`, {timeout: 120000});
 
   const body = await page.content();
 
@@ -17,8 +18,8 @@ async function scrape (uri) {
 
   let cssContent = "";
 
-  for (let url of cssUrlsArr) {
-    await page.goto(url);
+  for (let cssUrl of cssUrlsArr) {
+    await page.goto(cssUrl);
     const cssContentTmp = await page.content();
     const regToDeleteTags = /(<([^>]+)>)/ig;
     const justCss = cssContentTmp.replace(regToDeleteTags, "");
@@ -33,21 +34,21 @@ async function scrape (uri) {
   }
 }
 
-function generateCritical(uri, file, scrapedData) {
+function generateCritical(url, file, scrapedData) {
 
   if (scrapedData.cssContent === "") {
-    console.info(`${config.host}/${uri} doesn't have CSS :C`);
+    console.info(`${url} doesn't have CSS :C`);
     return;
   }
 
-  const fileTempName = `tmp${uri}${new Date().getTime()}.css`;
+  const fileTempName = `tmp${new Date().getTime()}.css`;
 
   scrapedData.cssContent = scrapedData.cssContent.replace(/&gt;/g, ">");
 
   try {
     fs.writeFileSync(fileTempName, scrapedData.cssContent);
   } catch (e) {
-    console.error(`Cannot write the temporal file ${fileTempName} for ${config.host}/${uri}: ${e.message}`);
+    console.error(`Cannot write the temporal file ${fileTempName} for ${url}: ${e.message}`);
   }
 
   critical.generate({
@@ -74,17 +75,17 @@ function generateCritical(uri, file, scrapedData) {
     try {
       fs.unlinkSync(fileTempName);
     } catch (e) {
-      console.error(`Cannot delete the temporal file ${fileTempName} for ${config.host}/${uri}: ${e.message}`);
+      console.error(`Cannot delete the temporal file ${fileTempName} for ${url}: ${e.message}`);
     }
 
     const dataWithCritical = `| <style>${output}</style>`;
 
     // Write .jade file with dataWithCritical
     try {
-      fs.writeFileSync(`${pathFiles.output.critical}${file}/critical.jade`, dataWithCritical);
-      console.info(`Success! ${config.host}/${uri}`);
+      fs.writeFileSync(`${file}/critical.jade`, dataWithCritical);
+      console.info(`Success! ${url}`);
     } catch (e) {
-      console.error(`Cannot write file ${pathFiles.output.critical}${file}/critical.jade: ${e.message}`);
+      console.error(`Cannot write file ${file}/critical.jade: ${e.message}`);
     }
   }).error(function (e) {
     console.error(`Something wrong with critical :C ! ${e.message}`);
@@ -92,13 +93,11 @@ function generateCritical(uri, file, scrapedData) {
 }
 
 async function main () {
-  for (let page of config.pages) {
-    await scrape(page.uri).then((scrapedData) => {
-      generateCritical(page.uri, page.fileRoute, scrapedData);
-    }).catch((e) => {
-      console.error(`Error in loading ${config.host}/${uri}: ${e.message}`);
-    })
-  }
+  await scrape(url).then((scrapedData) => {
+    generateCritical(url, pathFiles.output, scrapedData);
+  }).catch((e) => {
+    console.error(`Error in loading ${url}: ${e.message}`);
+  })
 }
 
 main();
